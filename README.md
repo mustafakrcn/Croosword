@@ -1,3 +1,4 @@
+<img width="1080" height="2400" alt="ekran-goruntusu png" src="https://github.com/user-attachments/assets/7db1d0db-47a6-427a-86dc-264391996405" />
 # 🧩 Crossword App
 
 Bu proje, modern web teknolojileri (Vite + JavaScript) kullanılarak geliştirilmiş bir bulmaca (crossword) uygulamasıdır. 
@@ -6,6 +7,7 @@ Bu proje, modern web teknolojileri (Vite + JavaScript) kullanılarak geliştiril
 
 <!-- Buraya uygulamanızın ekran görüntüsü gelecek -->
 ![Crossword App Ekran Görüntüsü](./ekran-goruntusu.png)
+<img width="1080" height="2400" alt="ekran-goruntusu png" src="https://github.com/user-attachments/assets/8f87d36b-5f04-4566-88a0-23894eb84b1b" />
 
 ## 🚀 Özellikler
 - İnteraktif bulmaca deneyimi
