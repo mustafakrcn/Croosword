@@ -1,0 +1,15 @@
+{
+  "appId": "com.krcn.crossword",
+  "appName": "kRcn Crossword",
+  "webDir": "dist",
+  "plugins": {
+    "StatusBar": {
+      "style": "DARK",
+      "overlaysWebView": true
+    },
+    "FirebaseAuthentication": {
+      "skipNativeAuth": false,
+      "providers": ["google.com", "facebook.com", "password"]
+    }
+  }
+}

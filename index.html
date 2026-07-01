@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <script>
+    window.onerror = function (msg, url, lineNo, columnNo, error) {
+      console.error('Hata: ' + msg, url, lineNo, columnNo, error);
+      return false;
+    };
+    window.addEventListener('unhandledrejection', function (event) {
+      console.error('Beklenmeyen Hata: ' + event.reason);
+    });
+  </script>
+  <link rel="icon" type="image/png" href="./logo.png" />
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>kRcn Crossword</title>
+  <!-- Fonts: Inter & Outfit -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Outfit:wght@500;700&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="./src/style.css" />
+  <link rel="stylesheet" href="./src/menu.css" />
+
+  <link rel="manifest" href="./manifest.json">
+  <meta name="theme-color" content="#0f172a">
+</head>
+
+<body>
+  <div id="app">
+    <header>
+      <h1 class="game-title">kRcn <span class="highlight">CrossWord</span></h1>
+      <div class="stats-bar">
+        <span class="stat-item">Level: <span id="level-display">1</span></span>
+        <span id="coin-display" class="coin-display">🪙 <span id="coin-amount">0</span></span>
+        <span class="stat-item" id="score-container" style="display: flex; align-items: center;">
+          Score: <span id="score-display">0</span>
+          <button id="info-btn" class="icon-btn info-btn" title="Score Info">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="16" x2="12" y2="12"></line>
+              <line x1="12" y1="8" x2="12.01" y2="8"></line>
+            </svg>
+          </button>
+        </span>
+        <button id="menu-btn" class="icon-btn" title="Menu">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <main class="game-container">
+      <div class="grid-wrapper">
+        <div id="grid-container" class="grid-container">
+          <!-- Grid will be generated here -->
+        </div>
+      </div>
+
+    </main>
+
+    <div id="clue-container" class="clue-container">
+      <p id="current-clue" class="clue-text">Select a word to see the clue...</p>
+      <button id="hint-btn" class="hint-btn-modern" title="Smart Hint">
+        <span class="hint-icon">🪄</span>
+        <span class="hint-cost">20 🪙</span>
+      </button>
+    </div>
+
+    <div id="controls" class="controls">
+      <!-- Virtual Keyboard or Controls can go here -->
+    </div>
+
+    <div id="modal-overlay" class="modal-overlay hidden">
+      <canvas id="confetti-canvas" style="position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:1999;"></canvas>
+      <div class="modal level-complete-modal">
+        <div class="modal-trophy">🏆</div>
+        <h2 id="modal-title" class="modal-title">Level Complete!</h2>
+        <div class="modal-stats">
+          <div class="modal-stat-item">
+            <span class="modal-stat-label">SCORE</span>
+            <span id="modal-score" class="modal-stat-value">0</span>
+          </div>
+          <div class="modal-stat-item">
+            <span class="modal-stat-label">COINS</span>
+            <span id="modal-coins-earned" class="modal-stat-value gold">+50 🪙</span>
+          </div>
+        </div>
+        <button id="next-level-btn" class="btn-primary" style="width:100%;margin-top:10px;">Next Level ▶</button>
+      </div>
+    </div>
+
+    <!-- Main Menu Overlay -->
+    <div id="menu-overlay" class="menu-overlay">
+      <div class="menu-content">
+        <h1 class="game-title glitch" data-text="kRcn CrossWord">kRcn <span class="highlight">CrossWord</span></h1>
+        <div id="menu-main-view" class="bento-grid">
+          <button id="btn-play" class="btn-b">
+            <svg viewBox="0 0 24 24">
+              <path d="M8 5v14l11-7z" />
+            </svg>
+            <span class="btn-text">PLAY</span>
+          </button>
+
+          <button id="btn-leaderboard" class="btn-b">
+            <svg viewBox="0 0 24 24">
+              <path d="M16 11V3H8v6H2v12h20V11h-6zm-6-6h4v14h-4V5zm-6 6h4v8H4v-8zm16 8h-4v-6h4v6z" />
+            </svg>
+            <span class="btn-text">LEADERBOARD</span>
+          </button>
+
+          <button id="btn-gift" class="btn-b">
+            <svg viewBox="0 0 24 24">
+              <path
+                d="M20 6h-2.18c.11-.31.18-.65.18-1 0-1.66-1.34-3-3-3-1.05 0-1.96.54-2.5 1.35l-.5.67-.5-.68C10.96 2.54 10.05 2 9 2 7.34 2 6 3.34 6 5c0 .35.07.69.18 1H4c-1.11 0-2 .89-2 2v12c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-5-2c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zM9 4c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm11 15h-2v-2h2v2zm0-4h-2v-2h2v2zm0-4h-2V7h2v4zM2 21V8h11v13H2z" />
+            </svg>
+            <span class="btn-text">GIFT</span>
+          </button>
+
+          <button id="btn-profile" class="btn-b">
+            <svg viewBox="0 0 24 24">
+              <path
+                d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+            </svg>
+            <span class="btn-text">PROFILE</span>
+          </button>
+
+          <button id="btn-settings" class="btn-b">
+            <svg viewBox="0 0 24 24">
+              <path
+                d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.488.488 0 0 0-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.484.484 0 0 0-.48-.41h-3.84a.484.484 0 0 0-.48.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96a.488.488 0 0 0-.59.22l-1.92 3.32a.49.49 0 0 0 .12.61l2.03 1.58c-.05.3-.07.63-.07.94s.02.64.07.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32a.488.488 0 0 0 .59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.48-.41l.36-2.54c.59-.24 1.13-.57 1.62-.94l2.39.96a.488.488 0 0 0 .59-.22l1.92-3.32a.49.49 0 0 0-.12-.61l-2.03-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z" />
+            </svg>
+            <span class="btn-text">SETTINGS</span>
+          </button>
+        </div>
+
+        <div id="menu-category-view" class="category-view-container hidden">
+          <h2 class="section-title">SELECT MODE</h2>
+          <div class="category-buttons-grid">
+            <button id="btn-cat-mixed" class="btn-b">
+              <svg viewBox="0 0 24 24">
+                <path
+                  d="M12.87 15.07l-2.54-2.51.03-.03c1.74-1.94 2.98-4.17 3.71-6.53-1.7-.71-3.36-1.12-5.06-1.12H1v3.06h3.41c-.48 1.94-1.2 3.84-2.28 5.61l3.35 1.35c.67-1.19 1.25-2.47 1.7-3.83h1.87c-.3 1.15-.78 2.27-1.42 3.32-.96 1.55-2.26 2.87-3.89 3.86l2.12 3.1c2.18-1.55 3.96-3.69 5.09-6.29zM18 9V5h-6v4h2.5c-1.12 4.31-4.48 7.62-5.17 8.24l2.12 2.12C12.18 18.57 15.65 14.88 18 9z" />
+              </svg>
+              <span class="btn-text">MIXED (TR-EN)</span>
+            </button>
+
+            <button id="btn-cat-mixed-en-tr" class="btn-b">
+              <svg viewBox="0 0 24 24">
+                <path
+                  d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L8.9 15l1.1 5zm2.9 0c-.09-.53-.13-1.07-.13-1.63 0-1.86.6-3.56 1.6-4.95l1.6 4.95c-1.07.97-2.18 1.4-3.07 1.63zM16.9 8.2c1.23 1.05 2.15 2.53 2.55 4.19l-3.35-6.5C16.48 6.44 16.8 7.3 16.9 8.2zM12 4c.64 0 1.25.09 1.83.25l-2.07 4.02L8.5 4.31C9.58 4.11 10.76 4 12 4z" />
+              </svg>
+              <span class="btn-text">MIXED (EN-TR)</span>
+            </button>
+
+            <button id="btn-cat-english" class="btn-b">
+              <svg viewBox="0 0 24 24">
+                <path d="M5 13h14v-2H5v2zm-2 4h14v-2H3v2zM7 7v2h14V7H7z" />
+              </svg>
+              <span class="btn-text">ENGLISH ONLY</span>
+            </button>
+          </div>
+
+          <button id="btn-cat-back" class="btn-back-modern">
+            <svg viewBox="0 0 24 24">
+              <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" />
+            </svg>
+            <span class="btn-text">BACK</span>
+          </button>
+        </div>
+
+        <div id="menu-level-selection-view" class="level-select-grid hidden">
+          <h2 id="level-select-title" class="section-title">SELECT LEVEL</h2>
+          <div id="levels-container" class="levels-container">
+            <!-- Levels generated by JS -->
+          </div>
+          <button id="btn-level-back" class="btn-back-modern">
+            <svg viewBox="0 0 24 24">
+              <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" />
+            </svg>
+            BACK
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Settings Overlay -->
+    <div id="settings-overlay" class="menu-overlay hidden">
+      <div class="menu-content settings-content">
+        <h2 id="settings-title" class="section-title">SETTINGS</h2>
+
+        <div class="setting-row">
+          <span id="label-language">Language</span>
+          <div class="toggle-group">
+            <button id="btn-lang-en" class="btn-toggle active">EN</button>
+            <button id="btn-lang-tr" class="btn-toggle">TR</button>
+          </div>
+        </div>
+
+        <div class="settings-group">
+          <label id="label-audio">Audio</label>
+          <div class="toggle-row">
+            <span id="audio-status">ON</span>
+            <button id="btn-audio-toggle" class="btn-toggle"></button>
+          </div>
+        </div>
+        <div class="settings-group">
+          <label id="label-keyboard-sound">Keyboard Sound</label>
+          <div class="toggle-row">
+            <span id="keyboard-sound-status">ON</span>
+            <button id="btn-keyboard-sound-toggle" class="btn-toggle"></button>
+          </div>
+        </div>
+
+        <div class="settings-group" style="margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px;">
+          <button id="btn-reset-data" class="btn-primary" style="background: rgba(255,77,77,0.15); border-color: rgba(255,77,77,0.5); color: #ff6b6b; width: 100%;">
+            Verileri Sıfırla / Reset Data
+          </button>
+        </div>
+
+        <button id="btn-settings-back" class="btn-back-modern">
+          <svg viewBox="0 0 24 24">
+            <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" />
+          </svg>
+          BACK
+        </button>
+      </div>
+    </div>
+
+    <!-- Onboarding Overlay -->
+    <div id="onboarding-overlay" class="menu-overlay hidden" style="z-index: 1000;">
+      <div class="menu-content onboarding-content">
+        <h2 class="section-title">HOW TO PLAY</h2>
+        <div class="onboarding-step">
+          <div class="step-icon">👉</div>
+          <p>Tap a cell to select a word direction.</p>
+        </div>
+        <div class="onboarding-step">
+          <div class="step-icon">⌨️</div>
+          <p>Use the virtual keyboard to guess the word.</p>
+        </div>
+        <div class="onboarding-step">
+          <div class="step-icon">💡</div>
+          <p>Use hints if you are stuck. Come back daily for free coins!</p>
+        </div>
+        <button id="btn-finish-onboarding" class="btn-primary" style="margin-top: 20px; width: 100%;">
+          LET'S PLAY!
+        </button>
+      </div>
+    </div>
+
+    <!-- Auth Overlay -->
+    <div id="auth-overlay" class="menu-overlay hidden" style="z-index: 1000;">
+      <div id="auth-floating-bg" class="floating-bg-container"></div>
+      <div class="menu-content auth-content puzzle-entrance">
+        <h2 id="auth-title" class="section-title">LOGIN</h2>
+        
+        <div class="auth-tabs">
+          <button id="btn-tab-login" class="btn-tab active">Login</button>
+          <button id="btn-tab-register" class="btn-tab">Register</button>
+        </div>
+
+        <div id="auth-error-message" class="error-message hidden"></div>
+
+        <div class="profile-input-group">
+          <label>Email</label>
+          <input type="email" id="auth-email-input" class="modern-input" placeholder="Enter your email..." />
+        </div>
+        
+        <div class="profile-input-group">
+          <label>Password</label>
+          <input type="password" id="auth-password-input" class="modern-input" placeholder="Enter your password..." />
+        </div>
+
+        <div id="register-fields" class="hidden" style="width: 100%; display: flex; flex-direction: column; align-items: center;">
+          <div class="profile-input-group">
+            <label>Confirm Password</label>
+            <input type="password" id="auth-confirm-password-input" class="modern-input" placeholder="Confirm your password..." />
+          </div>
+        </div>
+
+        <button id="btn-auth-action" class="btn-primary" style="margin-top: 15px; width: 100%;">
+          LOGIN
+        </button>
+        
+        <div class="auth-divider">
+          <span>OR</span>
+        </div>
+
+        <button id="btn-auth-google" class="btn-secondary" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 10px;">
+          <svg width="18" height="18" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+          Continue with Google
+        </button>
+
+        <button id="btn-auth-facebook" class="btn-secondary" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 10px; background: rgba(24, 119, 242, 0.1); border-color: rgba(24, 119, 242, 0.3);">
+          <svg width="18" height="18" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="#1877F2" d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.469h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.469h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+          Continue with Facebook
+        </button>
+
+        <button id="btn-auth-guest" class="btn-secondary" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 10px; opacity: 0.8;">
+          <svg width="18" height="18" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+          Play as Guest
+        </button>
+
+        <button id="btn-close-auth" class="btn-back-modern" style="margin-top: 20px;">
+          <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" /></svg>
+          <span class="btn-text">BACK</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Profile Overlay -->
+    <div id="profile-overlay" class="menu-overlay hidden">
+      <div class="menu-content profile-content">
+        <h2 class="section-title">PROFILE</h2>
+        
+        <div class="profile-avatar-container">
+          <img id="profile-avatar-preview" class="profile-avatar" src="" alt="Avatar" style="display: none;" />
+          <div id="profile-avatar-placeholder" class="profile-avatar-placeholder">
+            <svg viewBox="0 0 24 24" width="48" height="48" fill="#fff"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+          </div>
+          <input type="file" id="profile-avatar-input" accept="image/*" style="display: none;" />
+          <button id="btn-edit-avatar" class="btn-edit-avatar">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="#fff"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+          </button>
+        </div>
+
+        <div class="profile-input-group">
+          <label>Username</label>
+          <input type="text" id="profile-username-input" class="modern-input" placeholder="Enter your name..." maxlength="15" />
+        </div>
+
+        <div class="profile-stats">
+          <div class="stat-box">
+            <span class="stat-label">SCORE</span>
+            <span class="stat-value" id="profile-stat-score">0</span>
+          </div>
+          <div class="stat-box">
+            <span class="stat-label">COINS</span>
+            <span class="stat-value" id="profile-stat-coins">0</span>
+          </div>
+        </div>
+
+        <button id="btn-save-profile" class="btn-primary" style="margin-top: 15px; width: 100%;">
+          SAVE PROFILE
+        </button>
+        <button id="btn-view-achievements" class="btn-secondary" style="margin-top: 10px; width: 100%;">
+          VIEW ACHIEVEMENTS
+        </button>
+        <button id="btn-logout" class="btn-secondary" style="margin-top: 10px; width: 100%; background: rgba(255,77,77,0.15); border-color: rgba(255,77,77,0.5); color: #ff6b6b;">
+          LOGOUT
+        </button>
+
+        <button id="btn-close-profile" class="btn-back-modern" style="margin-top: 20px;">
+          <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" /></svg>
+          <span class="btn-text">BACK</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Leaderboard Overlay -->
+    <div id="leaderboard-overlay" class="menu-overlay hidden">
+      <div class="menu-content leaderboard-content">
+        <h2 class="section-title">LEADERBOARD</h2>
+        
+        <div class="auth-tabs" style="margin-bottom: 20px;">
+          <button id="btn-lb-weekly" class="btn-tab active">Weekly</button>
+          <button id="btn-lb-monthly" class="btn-tab">Monthly</button>
+          <button id="btn-lb-alltime" class="btn-tab">All Time</button>
+        </div>
+
+        <div class="podium-container" id="leaderboard-podium">
+          <!-- Top 3 will be injected by JS -->
+        </div>
+
+        <div class="leaderboard-list" id="leaderboard-list">
+          <!-- Other players will be injected by JS -->
+        </div>
+
+        <button id="btn-close-leaderboard" class="btn-back-modern" style="margin-top: 20px;">
+          <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" /></svg>
+          <span class="btn-text">BACK</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Achievements Overlay -->
+    <div id="achievements-overlay" class="menu-overlay hidden">
+      <div class="menu-content achievements-content">
+        <h2 class="section-title">ACHIEVEMENTS</h2>
+        <div class="achievements-list" id="achievements-list">
+          <!-- JS injected -->
+        </div>
+        <button id="btn-close-achievements" class="btn-back-modern" style="margin-top: 15px;">
+          <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" /></svg>
+          <span class="btn-text">BACK</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Daily Reward Overlay -->
+    <div id="daily-reward-overlay" class="menu-overlay hidden">
+      <div class="menu-content daily-reward-content">
+        <h2 id="daily-reward-title" class="section-title glitch" data-text="DAILY REWARD">DAILY REWARD</h2>
+        <p id="daily-reward-subtitle" class="daily-reward-subtitle">Come back every day for better rewards!</p>
+        
+        <div class="rewards-grid" id="rewards-grid">
+          <!-- Reward items will be injected by JS -->
+        </div>
+
+        <button id="btn-claim-reward" class="btn-primary" style="margin-top: 20px; width: 100%;">
+          CLAIM REWARD
+        </button>
+      </div>
+    </div>
+
+    <!-- Score Info Modal -->
+    <div id="info-modal-overlay" class="modal-overlay hidden">
+      <div class="modal" style="width: 320px;">
+        <h2 class="modal-title" style="font-size: 1.4rem;">Puan Sistemi</h2>
+        <div style="text-align: left; font-size: 0.95rem; line-height: 1.6; color: rgba(255,255,255,0.9); margin-bottom: 20px;">
+          <p style="margin-bottom: 10px;">
+            <strong style="color: var(--primary-color);">Bölüm Skoru:</strong> Sadece bulunduğunuz bölümdeki başarınızı gösterir ve her yeni bölümde sıfırlanır. Bulunan her kelime <strong style="color: #ffd700;">10 puan</strong> kazandırır.
+          </p>
+          <p>
+            <strong style="color: var(--highlight-color);">Toplam Skor:</strong> Arka planda biriken tüm oyun genelindeki puanınızdır. Toplam skorunuz her 100 puana ulaştığında otomatik olarak <strong style="color: #ffd700;">+20 Jeton</strong> hediye kazanırsınız!
+          </p>
+        </div>
+        <button id="info-close-btn" class="btn-primary">Anladım</button>
+      </div>
+    </div>
+
+  </div>
+  <canvas id="confetti-canvas"></canvas>
+  <div id="splash-screen" class="splash-screen">
+    <div class="splash-content">
+      <h1 class="splash-logo">kRcn <span class="highlight">CrossWord</span></h1>
+      <div class="loader-line"></div>
+      <button id="start-btn" class="start-btn hidden-btn">START GAME</button>
+      <p class="loading-text">Loading...</p>
+    </div>
+  </div>
+  <audio id="bg-music">
+    <source src="./intro.mp3" type="audio/mpeg">
+  </audio>
+  <script type="module" src="./src/main.js"></script>
+
+</body>
+
+</html>
